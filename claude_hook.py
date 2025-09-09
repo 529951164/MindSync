@@ -335,6 +335,82 @@ def test_hook(test_file: str = None, config_path: str = None) -> bool:
         print(f"❌ Hook测试异常: {e}")
         return False
 
+def handle_claude_hook(debug: bool = False, config_path: str = None) -> bool:
+    """
+    处理Claude Code Hook调用
+    从stdin读取JSON数���，解析工具使用信息并同步相应文件
+    
+    Args:
+        debug: 是否开启调试模式
+        config_path: 配置文件路径
+        
+    Returns:
+        处理成功返回True
+    """
+    try:
+        import json
+        import sys
+        
+        # 从stdin读取Hook数据
+        hook_data = ""
+        for line in sys.stdin:
+            hook_data += line
+        
+        if debug:
+            print(f"🔍 Hook输入数据: {hook_data}", file=sys.stderr)
+        
+        if not hook_data.strip():
+            if debug:
+                print("⚠️ 未收到Hook数据", file=sys.stderr)
+            return True
+        
+        # 解析JSON数据
+        try:
+            data = json.loads(hook_data)
+        except json.JSONDecodeError as e:
+            if debug:
+                print(f"❌ JSON解析失败: {e}", file=sys.stderr)
+            return False
+        
+        # 检查是否是Write或Edit工具
+        tool_name = data.get('tool', {}).get('name', '')
+        if tool_name not in ['Write', 'Edit']:
+            if debug:
+                print(f"🔸 跳过非Write/Edit工具: {tool_name}", file=sys.stderr)
+            return True
+        
+        # 获取文件路径
+        tool_params = data.get('tool', {}).get('parameters', {})
+        file_path = tool_params.get('file_path', '')
+        
+        if not file_path:
+            if debug:
+                print("⚠️ 未找到文件路径", file=sys.stderr)
+            return True
+        
+        # 检查是否是Markdown文件
+        if not file_path.lower().endswith(('.md', '.markdown')):
+            if debug:
+                print(f"🔸 跳过非Markdown文件: {file_path}", file=sys.stderr)
+            return True
+        
+        if debug:
+            print(f"🔄 开始同步MD文件: {file_path}", file=sys.stderr)
+        
+        # 执行同步
+        success = sync_file_hook(file_path, "hook", config_path)
+        
+        if debug:
+            status = "成功" if success else "失败"
+            print(f"✅ Hook同步{status}: {file_path}", file=sys.stderr)
+        
+        return success
+        
+    except Exception as e:
+        if debug:
+            print(f"❌ Hook处理异常: {e}", file=sys.stderr)
+        return False
+
 def main():
     """命令行主函数"""
     parser = argparse.ArgumentParser(
@@ -370,6 +446,10 @@ def main():
     test_parser = subparsers.add_parser('test', help='测试Hook功能')
     test_parser.add_argument('--file', help='测试文件路径')
     
+    # hook命令 - Claude Code Hook处理
+    hook_parser = subparsers.add_parser('hook', help='处理Claude Code Hook调用')
+    hook_parser.add_argument('--debug', action='store_true', help='调试模式')
+    
     args = parser.parse_args()
     
     if not args.command:
@@ -385,6 +465,8 @@ def main():
             success = install_claude_hook(args.name, args.config)
         elif args.command == 'test':
             success = test_hook(args.file, args.config)
+        elif args.command == 'hook':
+            success = handle_claude_hook(args.debug, args.config)
         else:
             print(f"❌ 未知命令: {args.command}")
             success = False

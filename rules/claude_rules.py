@@ -112,32 +112,11 @@ class ClaudeTitleRule(SyncRule):
     
     def get_title(self, md_file: Path, config: Dict[str, Any]) -> str:
         """
-        生成Claude风格的标题
-        格式: [项目名] 文档名
+        生成简洁的标题
+        格式: 文档名（不含扩展名）
         """
-        # 获取基础标题
-        base_title = md_file.stem
-        
-        # 获取项目名称
-        project_name = get_project_name_from_path(md_file)
-        
-        if project_name:
-            # 添加项目名称前缀
-            title = f"[{project_name}] {base_title}"
-        else:
-            # 没有项目名称时添加通用前缀
-            title = f"[文档] {base_title}"
-        
-        # 应用配置中的其他设置
-        notes_config = config.get('notes_config', {})
-        
-        # 添加时间戳（如果启用）
-        if notes_config.get('add_timestamp', False):
-            from datetime import datetime
-            timestamp = datetime.now().strftime('%m%d_%H%M')
-            title = f"{title}_{timestamp}"
-        
-        return title
+        # 只返回文件名，不添加项目前缀
+        return md_file.stem
     
     def execute(self, md_file: Path, apple_bridge, config: Dict[str, Any]) -> bool:
         """此规则主要影响标题生成，不执行实际同步"""
@@ -172,16 +151,19 @@ class ClaudeContentRule(SyncRule):
         except ImportError:
             # 如果转换器不可用，使用简化格式
             self.logger.warning("Markdown转换器不可用，使用简化格式")
-            return f"{md_file.stem}\n\n{original_content}"
+            # 简化格式也需要使用<br><br>来确保文件名和内容分隔
+            simple_content = original_content.replace('\n', '<br>')
+            return f"{md_file.stem}<br><br>{simple_content}"
         
-        # 第一行：仅显示文件名（作为备忘录标题）
+        # 第一行：只使用文件名（作为备忘录标题）
         title_line = md_file.stem
         
         # 转换Markdown内容为备忘录格式
         converted_content = convert_markdown_for_notes(original_content)
         
         # 组合内容：文件名 + 转换后的内容
-        enhanced_content = f"{title_line}\n\n{converted_content}"
+        # 确保文件名和内容之间有明确的分隔，使用<br><br>而不是\n\n
+        enhanced_content = f"{title_line}<br><br>{converted_content}"
         
         return enhanced_content
     
