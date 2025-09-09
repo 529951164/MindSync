@@ -48,3 +48,4 @@ temp/
 # 用户配置（可能包含敏感信息）
 config.local.json
 修复记录.md
+.claude
