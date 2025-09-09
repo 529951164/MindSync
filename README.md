@@ -52,7 +52,7 @@
 <td width="33%" align="center">
 <h4>✨ 完美格式转换</h4>
 <img src="doc/手机上预览readme.PNG" width="250"/>
-<br><em>Markdown完美显示，阅读体验极佳</em>
+<br><em>Markdown完美显示，体验极佳</em>
 </td>
 <td width="33%" align="center">
 <h4>📝 技术文档同步</h4>
