@@ -1,0 +1,8 @@
+# MindSync - Mac备忘录同步工具依赖文件
+# 本项目仅使用Python标准库，无需额外依赖
+
+# Python版本要求
+# python>=3.7
+
+# 注意：本项目专为macOS设计，依赖系统内置的AppleScript支持
+# 无需安装额外的Python包，保持轻量级设计

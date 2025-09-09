@@ -133,17 +133,53 @@ MacNoteTools/
 
 ### 🎬 一键式体验流程
 
+#### 🤖 方法一：AI助手自动部署（最推荐）
+
+**直接对Claude Code说：**
+```
+请帮我部署MindSync项目(https://github.com/529951164/MindSync.git)，
+实现Markdown文档自动同步到Mac备忘录功能。
+请执行完整的克隆、配置和Hook安装流程。
+```
+
+**AI会自动完成：**
+- 🔍 克隆项目到合适的目录
+- 🔧 检查环境和依赖
+- ⚙️ 初始化配置文件
+- 🔗 安装Claude Code Hook
+- 🧪 运行测试验证功能
+- 📖 提供使用说明
+
+#### 🛠️ 方法二：一键脚本部署
+
+```bash
+# 克隆项目并自动部署
+git clone https://github.com/529951164/MindSync.git
+cd MindSync
+./deploy.sh
+```
+
+**部署脚本会自动：**
+- ✅ 检查系统环境（macOS + Python 3.7+）
+- ✅ 初始化配置文件
+- ✅ 安装Claude Code Hook（如果检测到Claude Code）
+- ✅ 运行功能测试验证
+- ✅ 提供完整的使用指导
+
+#### 方法二：手动步骤
+
 ### 1. 环境要求
 
 - macOS 系统
 - Python 3.7+
 - 已登录iCloud账户的备忘录应用
 
-### 2. 配置初始化
+### 2. 快速部署
 
 ```bash
-# 进入工具目录
-cd /Volumes/Q/MiniGame/MacNoteTools
+# 克隆项目到本地
+git clone https://github.com/529951164/MindSync.git
+cd MindSync
 
 # 初始化配置文件
 python main.py config --init
@@ -290,14 +326,14 @@ python3 install_hook.py
 
 🤖 **直接对Claude说这句话**：
 ```
-请帮我配置Claude Code Hook，用于自动同步Markdown文档到Mac备忘录：
+请帮我部署MindSync项目，实现Claude Code文档自动同步到Mac备忘录：
 
-1. 工具路径：/Volumes/Q/MiniGame/MacNoteTools
+1. 项目仓库：https://github.com/529951164/MindSync.git
 2. 我希望编辑或创建.md文件时自动同步到备忘录
-3. 备忘录标题使用文件名（不要项目前缀）
-4. 请自动检测和安装Hook
+3. 请执行完整的克隆、配置和Hook安装流程
+4. 如果遇到问题请运行./deploy.sh脚本
 
-请执行完整的配置流程。
+请开始部署并测试功能。
 ```
 
 🤖 **Claude会智能完成**：
