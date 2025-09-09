@@ -1,0 +1,42 @@
+{
+    "sync_rules": {
+        "auto_update": true,
+        "backup_before_update": false,
+        "max_file_size_mb": 50,
+        "encoding": "utf-8",
+        "excluded_patterns": [
+            "*.tmp.md",
+            "*draft*",
+            ".*",
+            "_*"
+        ],
+        "folder_mappings": {
+            "work": "工作笔记",
+            "personal": "个人笔记", 
+            "tech": "技术文档",
+            "claude": "Claude文档",
+            "default": "Notes"
+        }
+    },
+    "notes_config": {
+        "account": "iCloud",
+        "default_folder": "Notes",
+        "title_prefix": "",
+        "title_suffix": "",
+        "add_timestamp": false,
+        "add_source_path": true
+    },
+    "logging": {
+        "level": "INFO",
+        "log_file": "logs/sync.log",
+        "max_log_size_mb": 10,
+        "backup_count": 5,
+        "console_output": true
+    },
+    "claude_hook": {
+        "enabled": true,
+        "watch_patterns": ["*.md"],
+        "delay_seconds": 2,
+        "auto_sync_on_save": true
+    }
+}
