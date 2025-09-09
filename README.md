@@ -42,21 +42,32 @@
 
 ### 📱 手机端效果展示
 
-#### Claude文件夹自动分类管理
-![Claude文件夹结构](doc/手机上预览Claude同步文件夹目录.PNG)
-*自动按项目分类，一目了然的文档管理*
-
-#### 完美的格式显示效果  
-![同步文档预览](doc/手机上预览readme.PNG)
-*Markdown格式完美转换，手机阅读体验极佳*
-
-#### 详细的技术文档同步
-![技术文档同步](doc/手机上预览bug修复记录.PNG)
-*代码、配置、问题记录，全都完美同步*
+<table>
+<tr>
+<td width="33%" align="center">
+<h4>📁 智能项目分类</h4>
+<img src="doc/手机上预览Claude同步文件夹目录.PNG" width="250"/>
+<br><em>自动按项目分类，一目了然</em>
+</td>
+<td width="33%" align="center">
+<h4>✨ 完美格式转换</h4>
+<img src="doc/手机上预览readme.PNG" width="250"/>
+<br><em>Markdown完美显示，阅读体验极佳</em>
+</td>
+<td width="33%" align="center">
+<h4>📝 技术文档同步</h4>
+<img src="doc/手机上预览bug修复记录.PNG" width="250"/>
+<br><em>代码、配置、问题记录完美同步</em>
+</td>
+</tr>
+</table>
 
 ### 💻 Mac端管理界面
-![Mac端预览](doc/Mac上预览同步的文档截图.png)
-*桌面端统一管理，项目文档分类清晰*
+
+<div align="center">
+<img src="doc/Mac上预览同步的文档截图.png" width="800"/>
+<br><em>桌面端统一管理，项目文档分类清晰</em>
+</div>
 
 ## 💼 适用场景分析
 
