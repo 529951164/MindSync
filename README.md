@@ -384,7 +384,30 @@ rm -rf /Volumes/Q/MiniGame/MacNoteTools
 
 ## 📄 许可证
 
-此工具为个人使用项目，请根据实际需要进行修改和分发。
+本项目采用 [MIT License](LICENSE) 开源协议。
+
+```
+MIT License
+
+Copyright (c) 2024 梁栋
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+**这意味着您可以：**
+- ✅ 自由使用（个人和商业用途）
+- ✅ 自由修改和定制
+- ✅ 自由分发和销售
+- ✅ 自由集成到其他项目
+- ✅ 无需支付任何费用或申请许可
 
 ---
 
