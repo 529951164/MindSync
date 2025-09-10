@@ -274,6 +274,189 @@ def config_command(args):
     print("❌ 请指定配置操作 (--show, --validate, 或 --init)")
     return False
 
+def api_sync_command(args):
+    """API模式：同步单个文件"""
+    try:
+        config_path = args.config or "config.json" 
+        
+        # 在quiet模式下抑制日志输出
+        if args.quiet or args.format == 'json':
+            import logging
+            logging.getLogger().setLevel(logging.CRITICAL)
+        
+        engine = MDSyncEngine(config_path)
+        
+        file_path = Path(args.file)
+        if not file_path.exists():
+            result = {"status": "error", "message": f"文件不存在: {args.file}"}
+        else:
+            success = engine.sync_file(file_path)
+            if success:
+                result = {
+                    "status": "success", 
+                    "message": "同步完成", 
+                    "file": str(file_path)
+                }
+            else:
+                result = {"status": "error", "message": "同步失败"}
+        
+        if args.format == 'json':
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+            status_icon = "✅" if result["status"] == "success" else "❌"
+            print(f"{status_icon} {result['message']}")
+            
+        return result["status"] == "success"
+        
+    except Exception as e:
+        error_result = {"status": "error", "message": str(e)}
+        if args.format == 'json':
+            print(json.dumps(error_result, ensure_ascii=False))
+        else:
+            print(f"❌ 错误: {e}")
+        return False
+
+def api_status_command(args):
+    """API模式：获取系统状态"""
+    try:
+        config_path = args.config or "config.json"
+        
+        # 在JSON模式下抑制日志输出
+        if args.format == 'json':
+            import logging
+            logging.getLogger().setLevel(logging.CRITICAL)
+        
+        engine = MDSyncEngine(config_path)
+        
+        # 检查配置有效性
+        config_issues = engine.validate_config()
+        config_valid = len(config_issues) == 0
+        
+        # 检查备忘录访问性
+        notes_info = engine.get_notes_info()
+        notes_accessible = 'error' not in notes_info
+        
+        result = {
+            "status": "success",
+            "version": "1.3.0",
+            "config_valid": config_valid,
+            "config_issues": config_issues,
+            "notes_accessible": notes_accessible,
+            "notes_info": notes_info if notes_accessible else None
+        }
+        
+        if args.format == 'json':
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+            print("📊 系统状态:")
+            print(f"   版本: {result['version']}")
+            print(f"   配置: {'✅ 有效' if config_valid else '❌ 无效'}")
+            print(f"   备忘录访问: {'✅ 正常' if notes_accessible else '❌ 异常'}")
+            
+        return True
+        
+    except Exception as e:
+        error_result = {"status": "error", "message": str(e)}
+        if args.format == 'json':
+            print(json.dumps(error_result, ensure_ascii=False))
+        else:
+            print(f"❌ 状态检查失败: {e}")
+        return False
+
+def api_config_command(args):
+    """API模式：配置管理"""
+    try:
+        config_path = args.config or "config.json"
+        
+        # 读取配置文件
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+        except FileNotFoundError:
+            result = {"status": "error", "message": f"配置文件不存在: {config_path}"}
+        except Exception as e:
+            result = {"status": "error", "message": f"读取配置失败: {e}"}
+        else:
+            if args.get:
+                # 获取配置值
+                if args.editor:
+                    # 获取编辑器特定配置
+                    if args.editor in config.get('editors', {}):
+                        editor_config = config['editors'][args.editor]
+                        if args.get in editor_config:
+                            value = editor_config[args.get]
+                            result = {"status": "success", "key": f"editors.{args.editor}.{args.get}", "value": value}
+                        else:
+                            result = {"status": "error", "message": f"编辑器配置键不存在: {args.get}"}
+                    else:
+                        result = {"status": "error", "message": f"编辑器不存在: {args.editor}"}
+                else:
+                    # 获取全局配置（简化版，只支持顶级key）
+                    if args.get in config:
+                        value = config[args.get]
+                        result = {"status": "success", "key": args.get, "value": value}
+                    else:
+                        result = {"status": "error", "message": f"配置键不存在: {args.get}"}
+            
+            elif args.set:
+                # 设置配置值
+                key, value = args.set
+                # 尝试解析JSON值
+                try:
+                    parsed_value = json.loads(value)
+                except json.JSONDecodeError:
+                    parsed_value = value
+                
+                if args.editor:
+                    # 设置编辑器特定配置
+                    if 'editors' not in config:
+                        config['editors'] = {}
+                    if args.editor not in config['editors']:
+                        config['editors'][args.editor] = {}
+                    
+                    config['editors'][args.editor][key] = parsed_value
+                    result_key = f"editors.{args.editor}.{key}"
+                else:
+                    # 设置全局配置（简化版）
+                    config[key] = parsed_value
+                    result_key = key
+                
+                # 保存配置文件
+                try:
+                    with open(config_path, 'w', encoding='utf-8') as f:
+                        json.dump(config, f, indent=4, ensure_ascii=False)
+                    result = {"status": "success", "message": "配置已保存", "key": result_key, "value": parsed_value}
+                except Exception as e:
+                    result = {"status": "error", "message": f"保存配置失败: {e}"}
+            
+            else:
+                # 返回完整配置
+                result = {"status": "success", "config": config}
+        
+        if args.format == 'json':
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+            if result["status"] == "success":
+                if "key" in result and "value" in result:
+                    print(f"✅ {result['key']} = {result['value']}")
+                elif "message" in result:
+                    print(f"✅ {result['message']}")
+                else:
+                    print("✅ 配置信息:")
+                    print(json.dumps(result.get("config", {}), indent=2, ensure_ascii=False))
+            else:
+                print(f"❌ {result['message']}")
+                
+        return result["status"] == "success"
+        
+    except Exception as e:
+        error_result = {"status": "error", "message": str(e)}
+        if args.format == 'json':
+            print(json.dumps(error_result, ensure_ascii=False))
+        else:
+            print(f"❌ 配置操作失败: {e}")
+        return False
+
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
@@ -286,6 +469,10 @@ def main():
   %(prog)s sync-files file1.md file2.md            # 同步多个文件
   %(prog)s info                                     # 显示备忘录信息
   %(prog)s config --init                           # 初始化配置文件
+  
+API模式 (适合编辑器插件调用):
+  %(prog)s api sync --file document.md --format json     # 同步文件(JSON输出)
+  %(prog)s api status --format json                      # 获取状态(JSON输出)
         """
     )
     
@@ -339,6 +526,27 @@ def main():
     config_group.add_argument('--init', action='store_true', help='初始化配置文件')
     config_parser.add_argument('--force', action='store_true', help='强制覆盖已存在的配置文件')
     
+    # api 子命令
+    api_parser = subparsers.add_parser('api', help='API模式（适合编辑器插件调用）')
+    api_subparsers = api_parser.add_subparsers(dest='api_command', help='API子命令')
+    
+    # api sync 子命令
+    api_sync_parser = api_subparsers.add_parser('sync', help='同步文件')
+    api_sync_parser.add_argument('--file', required=True, help='要同步的文件路径')
+    api_sync_parser.add_argument('--format', choices=['text', 'json'], default='text', help='输出格式')
+    api_sync_parser.add_argument('--quiet', action='store_true', help='静默模式')
+    
+    # api status 子命令
+    api_status_parser = api_subparsers.add_parser('status', help='获取系统状态')
+    api_status_parser.add_argument('--format', choices=['text', 'json'], default='text', help='输出格式')
+    
+    # api config 子命令
+    api_config_parser = api_subparsers.add_parser('config', help='配置管理')
+    api_config_parser.add_argument('--editor', choices=['claude_code', 'cursor', 'vscode'], help='编辑器类型')
+    api_config_parser.add_argument('--get', metavar='KEY', help='获取配置值')
+    api_config_parser.add_argument('--set', nargs=2, metavar=('KEY', 'VALUE'), help='设置配置值')
+    api_config_parser.add_argument('--format', choices=['text', 'json'], default='text', help='输出格式')
+    
     # 解析参数
     args = parser.parse_args()
     
@@ -348,8 +556,8 @@ def main():
         parser.print_help()
         return
     
-    # 显示横幅（除了config show命令）
-    if not (args.command == 'config' and args.show):
+    # 显示横幅（除了config show和api命令）
+    if not ((args.command == 'config' and args.show) or args.command == 'api'):
         print_banner()
     
     # 执行对应的命令
@@ -364,6 +572,16 @@ def main():
             success = info_command(args)
         elif args.command == 'config':
             success = config_command(args)
+        elif args.command == 'api':
+            if args.api_command == 'sync':
+                success = api_sync_command(args)
+            elif args.api_command == 'status':
+                success = api_status_command(args)
+            elif args.api_command == 'config':
+                success = api_config_command(args)
+            else:
+                print(f"❌ 未知API命令: {args.api_command}")
+                success = False
         else:
             print(f"❌ 未知命令: {args.command}")
             success = False

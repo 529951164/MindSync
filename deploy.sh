@@ -50,18 +50,91 @@ python3 main.py config --init
 echo "🔍 验证配置..."
 python3 main.py config --validate
 
+# 检测和安装编辑器集成
+echo ""
+echo "🔍 检测已安装的编辑器..."
+
+INSTALLED_EDITORS=0
+
 # 检查Claude Code
-if ! command -v claude-code &> /dev/null; then
-    echo "⚠️  未找到Claude Code，请确保已安装Claude Code"
-    echo "   Hook功能将不可用，但基本同步功能正常"
-else
-    echo "✅ 找到Claude Code，准备安装Hook"
+if command -v claude-code &> /dev/null; then
+    echo "✅ 检测到 Claude Code"
+    INSTALLED_EDITORS=$((INSTALLED_EDITORS + 1))
     
     # 安装Hook
     if [[ -f "$SCRIPT_DIR/install_hook.py" ]]; then
         echo "🔗 正在安装Claude Code Hook..."
-        python3 "$SCRIPT_DIR/install_hook.py"
+        if python3 "$SCRIPT_DIR/install_hook.py"; then
+            # 更新配置状态
+            python3 "$SCRIPT_DIR/main.py" api config --editor claude_code --set hook_installed true --format json > /dev/null
+            echo "✅ Claude Code Hook安装成功"
+        else
+            echo "❌ Claude Code Hook安装失败"
+        fi
     fi
+else
+    echo "⚠️  未找到Claude Code"
+fi
+
+# 检查Cursor
+CURSOR_PATH=""
+if [[ -f "/Applications/Cursor.app/Contents/MacOS/Cursor" ]]; then
+    CURSOR_PATH="/Applications/Cursor.app"
+elif [[ -d "$HOME/.cursor" ]]; then
+    CURSOR_PATH="~/.cursor"
+fi
+
+if [[ -n "$CURSOR_PATH" ]]; then
+    echo "✅ 检测到 Cursor"
+    INSTALLED_EDITORS=$((INSTALLED_EDITORS + 1))
+    
+    # 安装Cursor扩展
+    if [[ -f "$SCRIPT_DIR/cursor-extension/install.sh" ]]; then
+        echo "🔗 正在安装Cursor扩展..."
+        if bash "$SCRIPT_DIR/cursor-extension/install.sh"; then
+            # 更新配置状态
+            python3 "$SCRIPT_DIR/main.py" api config --editor cursor --set extension_installed true --format json > /dev/null
+            echo "✅ Cursor扩展安装成功"
+        else
+            echo "❌ Cursor扩展安装失败"
+        fi
+    fi
+else
+    echo "⚠️  未找到Cursor"
+fi
+
+# 检查VSCode
+VSCODE_PATH=""
+if [[ -f "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ]]; then
+    VSCODE_PATH="/Applications/Visual Studio Code.app"
+elif [[ -d "$HOME/.vscode" ]]; then
+    VSCODE_PATH="~/.vscode"
+fi
+
+if [[ -n "$VSCODE_PATH" ]]; then
+    echo "✅ 检测到 VSCode"
+    INSTALLED_EDITORS=$((INSTALLED_EDITORS + 1))
+    
+    # VSCode使用相同的扩展
+    if [[ -f "$SCRIPT_DIR/cursor-extension/install.sh" ]]; then
+        echo "🔗 正在安装VSCode扩展..."
+        if bash "$SCRIPT_DIR/cursor-extension/install.sh"; then
+            # 更新配置状态
+            python3 "$SCRIPT_DIR/main.py" api config --editor vscode --set extension_installed true --format json > /dev/null
+            echo "✅ VSCode扩展安装成功"
+        else
+            echo "❌ VSCode扩展安装失败"
+        fi
+    fi
+else
+    echo "⚠️  未找到VSCode"
+fi
+
+if [[ $INSTALLED_EDITORS -eq 0 ]]; then
+    echo "❌ 未检测到支持的编辑器（Claude Code、Cursor、VSCode）"
+    echo "   基本同步功能仍可使用"
+else
+    echo "🎉 成功集成 $INSTALLED_EDITORS 个编辑器"
 fi
 
 # 运行测试
@@ -73,12 +146,43 @@ else
 fi
 
 echo ""
-echo "🎉 MindSync 部署完成！"
+echo "🎉 MindSync 多编辑器支持部署完成！"
 echo ""
+
+# 显示编辑器特定的使用指南
 echo "📖 使用指南："
-echo "  • 同步文件：python3 main.py sync-file your-file.md"
+
+if python3 "$SCRIPT_DIR/main.py" api config --editor claude_code --get hook_installed --format json 2>/dev/null | grep -q "true"; then
+    echo "  📝 Claude Code："
+    echo "    • 编辑MD文件时自动同步到备忘录"
+    echo "    • 无需任何额外操作"
+fi
+
+if python3 "$SCRIPT_DIR/main.py" api config --editor cursor --get extension_installed --format json 2>/dev/null | grep -q "true"; then
+    echo "  🎯 Cursor："
+    echo "    • 保存MD文件时自动同步"
+    echo "    • 使用 Cmd+Shift+M 手动同步"
+    echo "    • 状态栏显示同步状态"
+fi
+
+if python3 "$SCRIPT_DIR/main.py" api config --editor vscode --get extension_installed --format json 2>/dev/null | grep -q "true"; then
+    echo "  📋 VSCode："
+    echo "    • 保存MD文件时自动同步"
+    echo "    • 使用 Cmd+Shift+M 手动同步"
+    echo "    • 状态栏显示同步状态"
+fi
+
+echo ""
+echo "⚡ 通用命令："
+echo "  • 手动同步：python3 main.py sync-file your-file.md"
+echo "  • 检查状态：python3 main.py api status"
+echo "  • 查看配置：python3 main.py config --show"
 echo "  • 查看帮助：python3 main.py --help"
-echo "  • 如果配置了Hook，编辑MD文件时将自动同步"
+echo ""
+echo "🔧 配置管理："
+echo "  • 获取设置：python3 main.py api config --editor cursor --get auto_sync"
+echo "  • 修改设置：python3 main.py api config --editor cursor --set auto_sync false"
 echo ""
 echo "📚 完整文档：https://github.com/529951164/MindSync"
+echo "🐛 问题反馈：https://github.com/529951164/MindSync/issues"
 echo "=================================="

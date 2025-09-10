@@ -1,0 +1,118 @@
+{
+  "name": "mindsync-cursor",
+  "displayName": "MindSync - AI编程文档同步",
+  "description": "🧠 自动同步Markdown文档到Mac备忘录，让AI编程更高效",
+  "version": "1.0.0",
+  "publisher": "mindsync",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Productivity"
+  ],
+  "keywords": [
+    "markdown",
+    "notes",
+    "sync",
+    "apple",
+    "mac",
+    "ai",
+    "cursor",
+    "claude",
+    "productivity",
+    "mindsync"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mindsync.syncCurrent",
+        "title": "🔄 同步当前文档",
+        "category": "MindSync"
+      },
+      {
+        "command": "mindsync.syncAll",
+        "title": "📁 同步所有Markdown文档", 
+        "category": "MindSync"
+      },
+      {
+        "command": "mindsync.toggleAutoSync",
+        "title": "⚡ 切换自动同步",
+        "category": "MindSync"
+      },
+      {
+        "command": "mindsync.checkStatus",
+        "title": "📊 检查状态",
+        "category": "MindSync"
+      }
+    ],
+    "configuration": {
+      "title": "MindSync",
+      "properties": {
+        "mindsync.autoSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "保存Markdown文件时自动同步到备忘录"
+        },
+        "mindsync.toolPath": {
+          "type": "string", 
+          "default": "",
+          "description": "MindSync工具路径（留空自动检测）"
+        },
+        "mindsync.syncDelay": {
+          "type": "number",
+          "default": 1000,
+          "description": "同步延迟（毫秒）"
+        },
+        "mindsync.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "显示同步状态通知"
+        }
+      }
+    },
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "mindsync.syncCurrent",
+          "when": "resourceExtname == .md",
+          "group": "mindsync"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "mindsync.syncCurrent",
+          "when": "editorLangId == markdown",
+          "group": "mindsync"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "mindsync.syncCurrent",
+        "key": "cmd+shift+m",
+        "mac": "cmd+shift+m",
+        "win": "ctrl+shift+m",
+        "when": "editorLangId == markdown"
+      }
+    ]
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/529951164/MindSync.git"
+  },
+  "homepage": "https://github.com/529951164/MindSync#readme",
+  "bugs": {
+    "url": "https://github.com/529951164/MindSync/issues"
+  },
+  "license": "MIT",
+  "icon": "icon.png"
+}

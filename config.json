@@ -12,7 +12,7 @@
         ],
         "folder_mappings": {
             "work": "工作笔记",
-            "personal": "个人笔记", 
+            "personal": "个人笔记",
             "tech": "技术文档",
             "claude": "Claude文档",
             "default": "Notes"
@@ -35,8 +35,37 @@
     },
     "claude_hook": {
         "enabled": true,
-        "watch_patterns": ["*.md"],
+        "watch_patterns": [
+            "*.md"
+        ],
         "delay_seconds": 2,
         "auto_sync_on_save": true
+    },
+    "editors": {
+        "claude_code": {
+            "enabled": true,
+            "auto_sync": true,
+            "hook_installed": false,
+            "sync_delay": 2
+        },
+        "cursor": {
+            "enabled": true,
+            "auto_sync": true,
+            "extension_installed": false,
+            "sync_delay": 2000,
+            "show_notifications": true
+        },
+        "vscode": {
+            "enabled": true,
+            "auto_sync": true,
+            "extension_installed": false,
+            "sync_delay": 1,
+            "show_notifications": true
+        }
+    },
+    "api": {
+        "output_format": "json",
+        "quiet_mode": false,
+        "version": "1.3.0"
     }
 }
